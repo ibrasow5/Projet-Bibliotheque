@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -21,6 +22,7 @@ public class Main extends Application {
         Menu gestionUtilisateursMenu = new Menu("Gestion des Utilisateurs");
         Menu gestionLivresMenu = new Menu("Gestion des Livres");
         Menu gestionEmpruntsMenu = new Menu("Gestion des Emprunts");
+        Menu statistiquesMenu = new Menu("Statistiques");
 
         MenuItem afficherUtilisateursItem = new MenuItem("Afficher les utilisateurs");
         MenuItem ajouterUtilisateurItem = new MenuItem("Ajouter un utilisateur");
@@ -38,6 +40,9 @@ public class Main extends Application {
         MenuItem afficherEmpruntsItem = new MenuItem("Afficher les emprunts");
         MenuItem limiterEmpruntsItem = new MenuItem("Limiter les emprunts");
         gestionEmpruntsMenu.getItems().addAll(enregistrerEmpruntItem, enregistrerRetourItem, afficherEmpruntsItem, limiterEmpruntsItem);
+
+        MenuItem afficherStatistiquesItem = new MenuItem("Afficher les statistiques");
+        statistiquesMenu.getItems().add(afficherStatistiquesItem);
 
         afficherUtilisateursItem.setOnAction(e -> {
             ouvrirFenetre(new AffichageUtilisateursPage(), primaryStage);
@@ -83,8 +88,12 @@ public class Main extends Application {
             ouvrirFenetre(new LimitationEmpruntsPage(), primaryStage);
         });
 
+        afficherStatistiquesItem.setOnAction(e -> {
+            ouvrirFenetre(new StatistiquesPage(), primaryStage);
+        });
+
         MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().addAll(gestionUtilisateursMenu, gestionLivresMenu, gestionEmpruntsMenu);
+        menuBar.getMenus().addAll(gestionUtilisateursMenu, gestionLivresMenu, gestionEmpruntsMenu, statistiquesMenu);
 
         VBox root = new VBox();
         root.getChildren().addAll(menuBar);
@@ -124,7 +133,7 @@ public class Main extends Application {
         buttonBox.setPadding(new Insets((10)));
         root.getChildren().add(buttonBox);
 
-        Scene scene = new Scene(root, 450, 400);
+        Scene scene = new Scene(root, 481, 400);
 
         primaryStage.setTitle("Gestionnaire de Bibliothèque");
         primaryStage.setScene(scene);
@@ -152,11 +161,9 @@ public class Main extends Application {
 
     private void ouvrirFenetre(Page page, Stage parentStage) {
         Stage stage = new Stage();
-        Scene scene = new Scene(page.getContent());
-        stage.setScene(scene);
         stage.setTitle(page.getTitle());
+        stage.setScene(new Scene(page.getContent(), 220, 200));
         stage.initOwner(parentStage);
-        stage.setOnCloseRequest(event -> parentStage.requestFocus());
         stage.showAndWait(); // Afficher la fenêtre de manière modale
     }
 
@@ -322,15 +329,17 @@ public VBox getContent() {
 
     modifyButton.setOnAction(e -> {
         String isbn = isbnField.getText();
-
-        Bibliotheque bibliotheque = new Bibliotheque();
         Livre livre = Bibliotheque.rechercherLivre("ISBN", isbn);
       
         if (livre != null) {
             String nouveauTitre = titreField.getText();
             String nouvelAuteur = auteurField.getText();
             int nouvelleAnnee = Integer.parseInt(anneeField.getText());
+    
+            // Instancier un objet Bibliotheque
+            Bibliotheque bibliotheque = new Bibliotheque();
             bibliotheque.modifierLivre(livre, nouveauTitre, nouvelAuteur, nouvelleAnnee);
+            
             System.out.println("Livre modifié avec succès.");
             Stage stage = (Stage) modifyButton.getScene().getWindow(); 
             stage.close();
@@ -338,6 +347,9 @@ public VBox getContent() {
             System.out.println("Aucun livre trouvé avec cet ISBN.");
         }
     });
+    
+    
+    
 
     root.getChildren().addAll(new Label("ISBN:"), isbnField, new Label("Titre:"), titreField,
             new Label("Auteur:"), auteurField, new Label("Année de publication:"), anneeField, modifyButton);
@@ -465,10 +477,67 @@ class AffichageEmpruntsPage implements Page {
     @Override
     public VBox getContent() {
         VBox root = new VBox();
-        // Ajouter les éléments d'interface utilisateur pour afficher les emprunts
+
+        // Créer les éléments d'interface utilisateur
+        Label instructionLabel = new Label("Numéro d'identification :");
+        TextField idTextField = new TextField();
+        Button afficherButton = new Button("Afficher");
+
+        // Définir l'action à effectuer lorsque le bouton est cliqué
+        afficherButton.setOnAction(event -> {
+            // Récupérer le numéro d'identification saisi par l'utilisateur
+            int userId = Integer.parseInt(idTextField.getText());
+            // Afficher les livres empruntés par l'utilisateur dans le terminal
+            afficherLivresEmpruntes(userId);
+            Stage stage = (Stage) afficherButton.getScene().getWindow(); 
+            stage.close();
+        });
+
+        // Ajouter les éléments à la racine
+        root.getChildren().addAll(instructionLabel, idTextField, afficherButton);
+
         return root;
     }
-}
+
+    private void afficherLivresEmpruntes(int numeroIdentification) {
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT e.ISBN, e.DateEmprunt, l.Titre, l.Auteur, l.AnneePublication " +
+                                                                                 "FROM emprunt e " +
+                                                                                 "JOIN livre l ON e.ISBN = l.ISBN " +
+                                                                                 "WHERE NumeroIdentification = ? AND e.DateRetour IS NULL")) {
+    
+            preparedStatement.setInt(1, numeroIdentification);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            
+            // Variable pour garder trace s'il y a au moins un livre emprunté
+            boolean livreEmprunte = false;
+    
+            // Afficher les livres empruntés dans le terminal avec leurs informations complètes
+            while (resultSet.next()) {
+                livreEmprunte = true; // Indiquer qu'au moins un livre a été trouvé
+                String isbnLivre = resultSet.getString("ISBN");
+                String dateEmprunt = resultSet.getString("DateEmprunt");
+                String titreLivre = resultSet.getString("Titre");
+                String auteurLivre = resultSet.getString("Auteur");
+                int anneePublication = resultSet.getInt("AnneePublication");
+    
+                Livre livre = new Livre(isbnLivre, titreLivre, auteurLivre, anneePublication);
+                System.out.println(livre); // Utilisation de la méthode toString() de Livre pour afficher les informations du livre
+                System.out.println("Date Emprunt: " + dateEmprunt);
+                System.out.println("Date Retour: (Non retourné)");
+                System.out.println(); // Ligne vide pour séparer les livres
+            }
+    
+            // Si aucun livre n'a été emprunté, afficher un message
+            if (!livreEmprunte) {
+                System.out.println("Aucun livre emprunté et non retourné pour cet utilisateur.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }             
+}    
+
 
 class LimitationEmpruntsPage implements Page {
     @Override
@@ -479,7 +548,59 @@ class LimitationEmpruntsPage implements Page {
     @Override
     public VBox getContent() {
         VBox root = new VBox();
-        // Ajouter les éléments d'interface utilisateur pour limiter les emprunts
+        TextField limiteField = new TextField();
+        Button validerButton = new Button("Valider");
+
+        validerButton.setOnAction(e -> {
+            try {
+                int limite = Integer.parseInt(limiteField.getText());
+                Bibliotheque.definirLimiteEmprunts(limite);
+                System.out.println("Limite des emprunts définie avec succès : " + limite);
+                Stage stage = (Stage) validerButton.getScene().getWindow();
+                stage.close();
+            } catch (NumberFormatException ex) {
+                System.out.println("Veuillez entrer un nombre valide.");
+            }
+        });
+
+        root.getChildren().addAll(new Label("Limite de livres à emprunter:"), limiteField, validerButton);
         return root;
     }
 }
+
+class StatistiquesPage implements Page {
+    @Override
+    public String getTitle() {
+        return "Statistiques de la bibliothèque";
+    }
+
+    @Override
+    public VBox getContent() {
+        VBox root = new VBox();
+        root.setSpacing(10);
+        root.setPadding(new Insets(10));
+
+        // Créer les éléments d'interface utilisateur
+        Label statistiquesLabel = new Label("Statistiques de la bibliothèque:");
+        Label nombreTotalLivresLabel = new Label("Nombre total de livres: " + Bibliotheque.getNombreTotalLivres());
+        Label nombreExemplairesEmpruntesLabel = new Label("Nombre d'exemplaires empruntés: " + Bibliotheque.getNombreExemplairesEmpruntes());
+        
+        // Créer le bouton pour fermer la fenêtre
+        Button fermerButton = new Button("Fermer");
+        fermerButton.setOnAction(event -> {
+            Stage stage = (Stage) fermerButton.getScene().getWindow();
+            stage.close();
+        });
+
+        // Créer une HBox pour aligner le bouton en bas à droite
+        HBox buttonBox = new HBox();
+        buttonBox.getChildren().add(fermerButton);
+        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Ajouter les éléments à la racine
+        root.getChildren().addAll(statistiquesLabel, nombreTotalLivresLabel, nombreExemplairesEmpruntesLabel, buttonBox);
+
+        return root;
+    }
+}
+

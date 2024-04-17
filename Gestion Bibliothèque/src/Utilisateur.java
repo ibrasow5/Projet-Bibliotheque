@@ -54,10 +54,16 @@ public class Utilisateur {
     }
 
     public void emprunterLivre(Livre livre) {
+        int nombreMaxEmprunts = 3; // Limite de 3 emprunts par utilisateur
+        if (livresEmpruntes.size() >= nombreMaxEmprunts) {
+            System.out.println("Vous avez déjà atteint le nombre maximum d'emprunts autorisés.");
+            return;
+        }
         livresEmpruntes.add(livre);
         Bibliotheque bibliotheque = new Bibliotheque();
         bibliotheque.enregistrerEmprunt(this.getNumeroIdentification(), livre.getISBN());
-    }
+        System.out.println("Livre emprunté avec succès !");
+    }    
     
     public void retournerLivre(Livre livre) {
         livresEmpruntes.remove(livre);
@@ -68,8 +74,11 @@ public class Utilisateur {
     public void afficherLivresEmpruntes() {
         System.out.println("Livres empruntés par " + nom + " (ID: " + numeroIdentification + "):");
         for (Livre livre : livresEmpruntes) {
-            System.out.println(livre.toString());
-            System.out.println(); // Saut de ligne pour séparer les livres
+            // Afficher les informations du livre
+            System.out.println("Titre: " + livre.getTitre());
+            System.out.println("Auteur: " + livre.getAuteur());
+            System.out.println("Année de publication: " + livre.getAnneePublication());
+            System.out.println("ISBN: " + livre.getISBN());
         }
     }
 }

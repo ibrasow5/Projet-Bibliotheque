@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mer. 17 avr. 2024 à 03:31
+-- Généré le : mer. 17 avr. 2024 à 19:10
 -- Version du serveur : 8.0.31
 -- Version de PHP : 8.1.2
 
@@ -31,8 +31,15 @@ CREATE TABLE `emprunt` (
   `NumeroIdentification` int NOT NULL,
   `ISBN` varchar(255) NOT NULL,
   `DateEmprunt` date DEFAULT NULL,
-  `DateRetourPrevu` date DEFAULT NULL
+  `DateRetour` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Déchargement des données de la table `emprunt`
+--
+
+INSERT INTO `emprunt` (`NumeroIdentification`, `ISBN`, `DateEmprunt`, `DateRetour`) VALUES
+(111, '001', '2024-04-17', '2024-04-17');
 
 -- --------------------------------------------------------
 

@@ -3,16 +3,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Bibliotheque {
-    private ArrayList<Livre> listeLivres;
+    private static ArrayList<Livre> listeLivres;
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL_BD = "jdbc:mysql://localhost:3306/bibliotheque";
     private static final String UTILISATEUR = "root";
     private static final String MOT_DE_PASSE = "";
 
-    private static final String ISBN = null;
-
     public Bibliotheque() {
-        this.listeLivres = new ArrayList<>();
+        Bibliotheque.listeLivres = new ArrayList<>();
         try {
             Class.forName(JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
@@ -44,21 +42,23 @@ public class Bibliotheque {
         }
     }
 
-    public void modifierLivre(String nouveauTitre, String nouvelAuteur, int nouvelleAnneePublication) {
+    public void modifierLivre(Livre livre, String nouveauTitre, String nouvelAuteur, int nouvelleAnneePublication) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE livre SET Titre = ?, Auteur = ?, AnneePublication = ? WHERE ISBN = ?");
             preparedStatement.setString(1, nouveauTitre);
             preparedStatement.setString(2, nouvelAuteur);
             preparedStatement.setInt(3, nouvelleAnneePublication);
-            preparedStatement.setString(4, ISBN);
+            preparedStatement.setString(4, livre.getISBN());
             preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    } 
+    }
+    
+    
 
     public static Livre rechercherLivre(String critere, String valeur) {
         Livre livreTrouve = null;
@@ -180,8 +180,41 @@ public class Bibliotheque {
         utilisateur.ajouterUtilisateur();
     }
 
-    public void modifierLivre(Livre livre, String nouveauTitre, String nouvelAuteur, int nouvelleAnnee) {
-        throw new UnsupportedOperationException("Unimplemented method 'modifierLivre'");
+    @SuppressWarnings("unused")
+    private static int limiteEmprunts;
+    public static void definirLimiteEmprunts(int limite) {
+        limiteEmprunts = limite;
     }
 
+    public static int getNombreTotalLivres() {
+        int nombreTotalLivres = 0;
+        try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM livre")) {
+            
+            if (resultSet.next()) {
+                nombreTotalLivres = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nombreTotalLivres;
+    }
+    
+    
+    
+    public static int getNombreExemplairesEmpruntes() {
+        int nombreExemplairesEmpruntes = 0;
+        try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM emprunt WHERE DateRetour IS NULL")) {
+            
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                nombreExemplairesEmpruntes = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nombreExemplairesEmpruntes;
+    }
 }
