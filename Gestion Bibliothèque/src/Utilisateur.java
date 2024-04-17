@@ -7,14 +7,16 @@ import java.sql.SQLException;
 public class Utilisateur {
     private int numeroIdentification;
     private String nom;
-    private ArrayList<Livre> livresEmpruntes; // Ajout de l'ArrayList pour stocker les livres empruntés
+    private ArrayList<Livre> livresEmpruntes; 
 
+    // Constructeur
     public Utilisateur(int numeroIdentification, String nom) {
         this.numeroIdentification = numeroIdentification;
         this.nom = nom;
-        this.livresEmpruntes = new ArrayList<>(); // Initialisation de l'ArrayList
+        this.livresEmpruntes = new ArrayList<>(); // Initialisation de la liste des livres empruntés
     }
 
+    // Getters et setters
     public int getNumeroIdentification() {
         return numeroIdentification;
     }
@@ -35,6 +37,7 @@ public class Utilisateur {
         return livresEmpruntes;
     }
 
+    // Méthode pour ajouter un utilisateur
     public void ajouterUtilisateur() {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
@@ -49,12 +52,9 @@ public class Utilisateur {
         }
     }
 
-    public boolean verifierEligibilite() {
-        throw new UnsupportedOperationException("Unimplemented method 'verifierEligibilite'");
-    }
-
+    // Méthode pour emprunter un livre
     public void emprunterLivre(Livre livre) {
-        int nombreMaxEmprunts = 3; // Limite de 3 emprunts par utilisateur
+        int nombreMaxEmprunts = 3; 
         if (livresEmpruntes.size() >= nombreMaxEmprunts) {
             System.out.println("Vous avez déjà atteint le nombre maximum d'emprunts autorisés.");
             return;
@@ -65,16 +65,17 @@ public class Utilisateur {
         System.out.println("Livre emprunté avec succès !");
     }    
     
+    // Méthode pour retourner un livre
     public void retournerLivre(Livre livre) {
         livresEmpruntes.remove(livre);
         Bibliotheque bibliotheque = new Bibliotheque();
         bibliotheque.enregistrerRetour(this.getNumeroIdentification(), livre.getISBN());
     }
     
+    // Méthode pour afficher les livres empruntés par l'utilisateur
     public void afficherLivresEmpruntes() {
         System.out.println("Livres empruntés par " + nom + " (ID: " + numeroIdentification + "):");
         for (Livre livre : livresEmpruntes) {
-            // Afficher les informations du livre
             System.out.println("Titre: " + livre.getTitre());
             System.out.println("Auteur: " + livre.getAuteur());
             System.out.println("Année de publication: " + livre.getAnneePublication());

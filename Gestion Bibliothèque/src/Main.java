@@ -12,18 +12,20 @@ import java.sql.*;
 
 public class Main extends Application {
     @SuppressWarnings("unused")
-    private Bibliotheque bibliotheque;
+    private Bibliotheque bibliotheque; 
 
     @SuppressWarnings("unchecked")
     @Override
     public void start(Stage primaryStage) {
         bibliotheque = new Bibliotheque();
 
+        // Création des menus pour la gestion des utilisateurs, des livres, des emprunts et des statistiques
         Menu gestionUtilisateursMenu = new Menu("Gestion des Utilisateurs");
         Menu gestionLivresMenu = new Menu("Gestion des Livres");
         Menu gestionEmpruntsMenu = new Menu("Gestion des Emprunts");
         Menu statistiquesMenu = new Menu("Statistiques");
 
+        // Création des éléments de menu pour chaque catégorie de gestion
         MenuItem afficherUtilisateursItem = new MenuItem("Afficher les utilisateurs");
         MenuItem ajouterUtilisateurItem = new MenuItem("Ajouter un utilisateur");
         MenuItem verifierEligibiliteItem = new MenuItem("Vérifier l'éligibilité");
@@ -44,6 +46,7 @@ public class Main extends Application {
         MenuItem afficherStatistiquesItem = new MenuItem("Afficher les statistiques");
         statistiquesMenu.getItems().add(afficherStatistiquesItem);
 
+        // Définition des actions à exécuter lorsque les éléments de menu sont sélectionnés
         afficherUtilisateursItem.setOnAction(e -> {
             ouvrirFenetre(new AffichageUtilisateursPage(), primaryStage);
         });
@@ -92,13 +95,14 @@ public class Main extends Application {
             ouvrirFenetre(new StatistiquesPage(), primaryStage);
         });
 
+        // Création de la barre de menu
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().addAll(gestionUtilisateursMenu, gestionLivresMenu, gestionEmpruntsMenu, statistiquesMenu);
 
         VBox root = new VBox();
         root.getChildren().addAll(menuBar);
 
-        // Créer un TableView pour afficher les livres
+        // Création d'un TableView pour afficher les livres
         TableView<Livre> tableView = new TableView<>();
         TableColumn<Livre, String> isbnCol = new TableColumn<>("ISBN");
         isbnCol.setCellValueFactory(new PropertyValueFactory<>("ISBN"));
@@ -114,18 +118,17 @@ public class Main extends Application {
 
         tableView.getColumns().addAll(isbnCol, titreCol, auteurCol, anneeCol);
 
-        // Charger les livres depuis la base de données et les ajouter au TableView
+        // Chargement des livres et ajout au TableView
         chargerLivres(tableView);
-
         root.getChildren().add(tableView);
 
+        // Création d'un bouton pour actualiser les données du TableView
         Button actualiserButton = new Button("Actualiser");
         actualiserButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                // Actualiser les données du TableView
-                tableView.getItems().clear(); // Efface les données actuelles
-                chargerLivres(tableView); // Recharge les données depuis la base de données
+                tableView.getItems().clear(); 
+                chargerLivres(tableView); 
             }
         });
 
@@ -133,13 +136,14 @@ public class Main extends Application {
         buttonBox.setPadding(new Insets((10)));
         root.getChildren().add(buttonBox);
 
+        // Création de la scène principale
         Scene scene = new Scene(root, 481, 400);
-
         primaryStage.setTitle("Gestionnaire de Bibliothèque");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
+    // Méthode pour charger les livres et les ajouter au TableView
     private void chargerLivres(TableView<Livre> tableView) {
         try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
              Statement statement = connection.createStatement();
@@ -159,24 +163,29 @@ public class Main extends Application {
         }
     }
 
+    // Méthode pour ouvrir une nouvelle fenêtre modale avec le contenu spécifié
     private void ouvrirFenetre(Page page, Stage parentStage) {
         Stage stage = new Stage();
         stage.setTitle(page.getTitle());
         stage.setScene(new Scene(page.getContent(), 220, 200));
         stage.initOwner(parentStage);
-        stage.showAndWait(); // Afficher la fenêtre de manière modale
+        stage.showAndWait(); 
     }
 
+    // Méthode principale de l'application
     public static void main(String[] args) {
         launch(args);
     }
 }
 
+// Interface pour définir une page avec un titre et un contenu (VBox)
 interface Page {
-    String getTitle();
-    VBox getContent();
+    String getTitle(); 
+    VBox getContent(); 
 }
 
+
+// Définition de la classe AffichageUtilisateursPage 
 class AffichageUtilisateursPage implements Page {
     @Override
     public String getTitle() {
@@ -189,7 +198,6 @@ class AffichageUtilisateursPage implements Page {
         VBox root = new VBox();
         TableView<Utilisateur> tableView = new TableView<>();
 
-        // Définir les colonnes du TableView pour les utilisateurs
         TableColumn<Utilisateur, Integer> idCol = new TableColumn<>("ID Utilisateur");
         idCol.setCellValueFactory(new PropertyValueFactory<>("numeroIdentification"));
 
@@ -198,13 +206,13 @@ class AffichageUtilisateursPage implements Page {
 
         tableView.getColumns().addAll(idCol, nomCol);
 
-        // Charger les utilisateurs depuis la base de données et les ajouter au TableView
         chargerUtilisateurs(tableView);
 
         root.getChildren().addAll(tableView);
         return root;
     }
 
+    // Méthode privée pour charger les utilisateurs et les ajouter au TableView
     private void chargerUtilisateurs(TableView<Utilisateur> tableView) {
         try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
              Statement statement = connection.createStatement();
@@ -215,6 +223,7 @@ class AffichageUtilisateursPage implements Page {
                 String nom = resultSet.getString("Nom");
 
                 Utilisateur utilisateur = new Utilisateur(id, nom);
+                
                 tableView.getItems().add(utilisateur);
             }
         } catch (SQLException e) {
@@ -223,7 +232,7 @@ class AffichageUtilisateursPage implements Page {
     }
 }
 
-
+// Définition de la classe AjoutUtilisateurPage 
 class AjoutUtilisateurPage implements Page {
     @Override
     public String getTitle() {
@@ -233,9 +242,11 @@ class AjoutUtilisateurPage implements Page {
     @Override
     public VBox getContent() {
         VBox root = new VBox();
+
         TextField nomField = new TextField();
         TextField idField = new TextField();
         Button addButton = new Button("Ajouter");
+
         addButton.setOnAction(e -> {
             String nom = nomField.getText();
             int id = Integer.parseInt(idField.getText());
@@ -243,178 +254,187 @@ class AjoutUtilisateurPage implements Page {
             Bibliotheque bibliotheque = new Bibliotheque();
             bibliotheque.ajouterUtilisateur(utilisateur);
             System.out.println("Utilisateur ajouté avec succès.");
-            Stage stage = (Stage) addButton.getScene().getWindow(); 
-            stage.close(); 
+            Stage stage = (Stage) addButton.getScene().getWindow();
+            stage.close();
         });
         root.getChildren().addAll(new Label("Nom:"), nomField, new Label("Numéro Identification:"), idField, addButton);
         return root;
     }
 }
 
+// Définition de la classe VerificationEligibilitePage
 class VerificationEligibilitePage implements Page {
     @Override
     public String getTitle() {
-        return "Vérifier l'éligibilité";
+        return "Vérifier l'éligibilité"; 
     }
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
+        VBox root = new VBox(); 
         TextField idField = new TextField();
-        Button verifyButton = new Button("Vérifier");
+        Button verifyButton = new Button("Vérifier"); 
+
         verifyButton.setOnAction(e -> {
             int id = Integer.parseInt(idField.getText());
-            Bibliotheque bibliotheque = new Bibliotheque();
+            Bibliotheque bibliotheque = new Bibliotheque(); 
             boolean estEligible = bibliotheque.verifierEligibilite(id);
             if (estEligible) {
-                System.out.println("Cet utilisateur est éligible.");
+                System.out.println("Cet utilisateur est éligible."); 
             } else {
-                System.out.println("Cet utilisateur est inéligible.");
+                System.out.println("Cet utilisateur est inéligible."); 
             }
-            Stage stage = (Stage) verifyButton.getScene().getWindow();
+            Stage stage = (Stage) verifyButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("Numéro Identification:"), idField, verifyButton);
-        return root;
+        return root; 
     }
 }
 
-
+// Définition de la classe AjoutLivrePage
 class AjoutLivrePage implements Page {
     @Override
     public String getTitle() {
-        return "Ajouter un livre";
+        return "Ajouter un livre"; 
     }
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
+        VBox root = new VBox(); 
+
         TextField titreField = new TextField();
         TextField auteurField = new TextField();
         TextField anneeField = new TextField();
         TextField isbnField = new TextField();
+
         Button addButton = new Button("Ajouter");
         addButton.setOnAction(e -> {
             String titre = titreField.getText();
             String auteur = auteurField.getText();
             int annee = Integer.parseInt(anneeField.getText());
             String isbn = isbnField.getText();
+
             Livre livre = new Livre(isbn, titre, auteur, annee);
+
             Bibliotheque bibliotheque = new Bibliotheque();
             bibliotheque.ajouterLivre(livre);
             System.out.println("Livre ajouté avec succès.");
             Stage stage = (Stage) addButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("Titre:"), titreField, new Label("Auteur:"), auteurField,
                 new Label("Année de publication:"), anneeField, new Label("ISBN:"), isbnField, addButton);
-        return root;
+        return root; 
     }
 }
 
+// Définition de la classe ModificationLivrePage
 class ModificationLivrePage implements Page {
     @Override
     public String getTitle() {
-        return "Modifier un livre";
+        return "Modifier un livre"; 
     }
 
     @Override
-public VBox getContent() {
-    VBox root = new VBox();
-    TextField isbnField = new TextField();
-    TextField titreField = new TextField();
-    TextField auteurField = new TextField();
-    TextField anneeField = new TextField();
-    Button modifyButton = new Button("Modifier");
+    public VBox getContent() {
+        VBox root = new VBox(); 
 
-    modifyButton.setOnAction(e -> {
-        String isbn = isbnField.getText();
-        Livre livre = Bibliotheque.rechercherLivre("ISBN", isbn);
-      
-        if (livre != null) {
-            String nouveauTitre = titreField.getText();
-            String nouvelAuteur = auteurField.getText();
-            int nouvelleAnnee = Integer.parseInt(anneeField.getText());
-    
-            // Instancier un objet Bibliotheque
-            Bibliotheque bibliotheque = new Bibliotheque();
-            bibliotheque.modifierLivre(livre, nouveauTitre, nouvelAuteur, nouvelleAnnee);
-            
-            System.out.println("Livre modifié avec succès.");
-            Stage stage = (Stage) modifyButton.getScene().getWindow(); 
-            stage.close();
-        } else {
-            System.out.println("Aucun livre trouvé avec cet ISBN.");
-        }
-    });
-    
-    
-    
+        TextField isbnField = new TextField();
+        TextField titreField = new TextField();
+        TextField auteurField = new TextField();
+        TextField anneeField = new TextField();
 
-    root.getChildren().addAll(new Label("ISBN:"), isbnField, new Label("Titre:"), titreField,
-            new Label("Auteur:"), auteurField, new Label("Année de publication:"), anneeField, modifyButton);
-    return root;
-}
+        Button modifyButton = new Button("Modifier");
+        modifyButton.setOnAction(e -> {
+            String isbn = isbnField.getText();
+            Livre livre = Bibliotheque.rechercherLivre("ISBN", isbn); 
+            if (livre != null) { 
+                String nouveauTitre = titreField.getText(); 
+                String nouvelAuteur = auteurField.getText(); 
+                int nouvelleAnnee = Integer.parseInt(anneeField.getText()); 
+                
+                Bibliotheque bibliotheque = new Bibliotheque();
+                
+                bibliotheque.modifierLivre(livre, nouveauTitre, nouvelAuteur, nouvelleAnnee);
+                System.out.println("Livre modifié avec succès.");
+                Stage stage = (Stage) modifyButton.getScene().getWindow(); 
+                stage.close();
+            } else {
+                System.out.println("Aucun livre trouvé avec cet ISBN."); 
+            }
+        });
+       
+        root.getChildren().addAll(new Label("ISBN:"), isbnField, new Label("Titre:"), titreField,
+                new Label("Auteur:"), auteurField, new Label("Année de publication:"), anneeField, modifyButton);
+        return root; 
+    }
 }
 
+// Définition de la classe SuppressionLivrePage
 class SuppressionLivrePage implements Page {
     @Override
     public String getTitle() {
-        return "Supprimer un livre";
+        return "Supprimer un livre"; 
     }
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
-        TextField isbnField = new TextField();
-        Button deleteButton = new Button("Supprimer");
+        VBox root = new VBox(); 
+        TextField isbnField = new TextField(); 
+        Button deleteButton = new Button("Supprimer"); 
+
         deleteButton.setOnAction(e -> {
-            String isbn = isbnField.getText();
-            Bibliotheque bibliotheque = new Bibliotheque();
-            bibliotheque.supprimerLivre(isbn); // Appeler la méthode supprimerLivre avec l'ISBN saisi
-            System.out.println("Livre supprimé avec succès.");
-            Stage stage = (Stage) deleteButton.getScene().getWindow();
+            String isbn = isbnField.getText(); 
+            Bibliotheque bibliotheque = new Bibliotheque(); 
+            bibliotheque.supprimerLivre(isbn);
+            System.out.println("Livre supprimé avec succès."); 
+            Stage stage = (Stage) deleteButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("ISBN:"), isbnField, deleteButton);
-        return root;
+        return root; 
     }
 }
 
-
+// Définition de la classe RechercheLivrePage
 class RechercheLivrePage implements Page {
     @Override
     public String getTitle() {
-        return "Rechercher un livre";
+        return "Rechercher un livre"; 
     }
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
+        VBox root = new VBox(); 
         TextField searchField = new TextField();
-        ComboBox<String> criteriaComboBox = new ComboBox<>();
-        criteriaComboBox.getItems().addAll("Titre", "Auteur", "ISBN");
-        criteriaComboBox.setValue("Titre");
-        Button searchButton = new Button("Rechercher");
+        ComboBox<String> criteriaComboBox = new ComboBox<>(); 
+        criteriaComboBox.getItems().addAll("Titre", "Auteur", "ISBN"); 
+        criteriaComboBox.setValue("Titre"); 
+        Button searchButton = new Button("Rechercher"); 
+
         searchButton.setOnAction(e -> {
-            String critere = criteriaComboBox.getValue();
-            String valeur = searchField.getText();
-            Livre livre = Bibliotheque.rechercherLivre(critere, valeur);
+            String critere = criteriaComboBox.getValue(); 
+            String valeur = searchField.getText(); 
+            Livre livre = Bibliotheque.rechercherLivre(critere, valeur); 
             if (livre != null) {
-                // Utilisation de la méthode toString() pour afficher les détails du livre
                 System.out.println(livre.toString());
             } else {
-                System.out.println("Aucun livre trouvé.");
+                System.out.println("Aucun livre trouvé."); 
             }
-            Stage stage = (Stage) searchButton.getScene().getWindow();
+            Stage stage = (Stage) searchButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("Rechercher par titre, auteur ou ISBN:"), searchField, criteriaComboBox, searchButton);
-        return root;
+        return root; 
     }
 }
 
-
+// Définition de la classe EnregistrementEmpruntPage
 class EnregistrementEmpruntPage implements Page {
     @Override
     public String getTitle() {
@@ -423,51 +443,56 @@ class EnregistrementEmpruntPage implements Page {
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
-        TextField userIdField = new TextField();
-        TextField isbnField = new TextField();
-        Button addButton = new Button("Enregistrer");
+        VBox root = new VBox(); 
+        TextField userIdField = new TextField(); 
+        TextField isbnField = new TextField(); 
+        Button addButton = new Button("Enregistrer"); 
+
         addButton.setOnAction(e -> {
-            int userId = Integer.parseInt(userIdField.getText());
-            String isbn = isbnField.getText();
-            Bibliotheque bibliotheque = new Bibliotheque();
+            int userId = Integer.parseInt(userIdField.getText()); 
+            String isbn = isbnField.getText(); 
+            Bibliotheque bibliotheque = new Bibliotheque(); 
             bibliotheque.enregistrerEmprunt(userId, isbn);
-            System.out.println("Emprunt enregistré avec succès.");
+            System.out.println("Emprunt enregistré avec succès."); 
             Stage stage = (Stage) addButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("ID Utilisateur:"), userIdField, new Label("ISBN Livre:"), isbnField, addButton);
-        return root;
+        return root; 
     }
 }
 
-
+// Définition de la classe EnregistrementRetourPage
 class EnregistrementRetourPage implements Page {
     @Override
     public String getTitle() {
-        return "Enregistrer un retour";
+        return "Enregistrer un retour"; 
     }
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
-        TextField userIdField = new TextField();
-        TextField isbnField = new TextField();
-        Button returnButton = new Button("Enregistrer");
+        VBox root = new VBox(); 
+        TextField userIdField = new TextField(); 
+        TextField isbnField = new TextField(); 
+        Button returnButton = new Button("Enregistrer"); 
+
         returnButton.setOnAction(e -> {
-            int userId = Integer.parseInt(userIdField.getText());
-            String isbn = isbnField.getText();
-            Bibliotheque bibliotheque = new Bibliotheque();
-            bibliotheque.enregistrerRetour(userId, isbn);
-            System.out.println("Retour enregistré avec succès.");
+            int userId = Integer.parseInt(userIdField.getText()); 
+            String isbn = isbnField.getText(); 
+            Bibliotheque bibliotheque = new Bibliotheque(); 
+            bibliotheque.enregistrerRetour(userId, isbn); 
+            System.out.println("Retour enregistré avec succès."); 
             Stage stage = (Stage) returnButton.getScene().getWindow(); 
             stage.close();
         });
+
         root.getChildren().addAll(new Label("ID Utilisateur:"), userIdField, new Label("ISBN Livre:"), isbnField, returnButton);
-        return root;
+        return root; 
     }
 }
 
+// Définition de la classe AffichageEmpruntsPage
 class AffichageEmpruntsPage implements Page {
     @Override
     public String getTitle() {
@@ -478,22 +503,17 @@ class AffichageEmpruntsPage implements Page {
     public VBox getContent() {
         VBox root = new VBox();
 
-        // Créer les éléments d'interface utilisateur
         Label instructionLabel = new Label("Numéro d'identification :");
         TextField idTextField = new TextField();
         Button afficherButton = new Button("Afficher");
 
-        // Définir l'action à effectuer lorsque le bouton est cliqué
         afficherButton.setOnAction(event -> {
-            // Récupérer le numéro d'identification saisi par l'utilisateur
             int userId = Integer.parseInt(idTextField.getText());
-            // Afficher les livres empruntés par l'utilisateur dans le terminal
             afficherLivresEmpruntes(userId);
             Stage stage = (Stage) afficherButton.getScene().getWindow(); 
             stage.close();
         });
 
-        // Ajouter les éléments à la racine
         root.getChildren().addAll(instructionLabel, idTextField, afficherButton);
 
         return root;
@@ -509,12 +529,10 @@ class AffichageEmpruntsPage implements Page {
             preparedStatement.setInt(1, numeroIdentification);
             ResultSet resultSet = preparedStatement.executeQuery();
             
-            // Variable pour garder trace s'il y a au moins un livre emprunté
             boolean livreEmprunte = false;
     
-            // Afficher les livres empruntés dans le terminal avec leurs informations complètes
             while (resultSet.next()) {
-                livreEmprunte = true; // Indiquer qu'au moins un livre a été trouvé
+                livreEmprunte = true;
                 String isbnLivre = resultSet.getString("ISBN");
                 String dateEmprunt = resultSet.getString("DateEmprunt");
                 String titreLivre = resultSet.getString("Titre");
@@ -522,13 +540,12 @@ class AffichageEmpruntsPage implements Page {
                 int anneePublication = resultSet.getInt("AnneePublication");
     
                 Livre livre = new Livre(isbnLivre, titreLivre, auteurLivre, anneePublication);
-                System.out.println(livre); // Utilisation de la méthode toString() de Livre pour afficher les informations du livre
+                System.out.println(livre); 
                 System.out.println("Date Emprunt: " + dateEmprunt);
                 System.out.println("Date Retour: (Non retourné)");
-                System.out.println(); // Ligne vide pour séparer les livres
+                System.out.println();
             }
     
-            // Si aucun livre n'a été emprunté, afficher un message
             if (!livreEmprunte) {
                 System.out.println("Aucun livre emprunté et non retourné pour cet utilisateur.");
             }
@@ -538,36 +555,37 @@ class AffichageEmpruntsPage implements Page {
     }             
 }    
 
-
+// Définition de la classe LimitationEmpruntsPage
 class LimitationEmpruntsPage implements Page {
     @Override
     public String getTitle() {
-        return "Limiter les emprunts";
+        return "Limiter les emprunts"; 
     }
 
     @Override
     public VBox getContent() {
         VBox root = new VBox();
-        TextField limiteField = new TextField();
-        Button validerButton = new Button("Valider");
+        TextField limiteField = new TextField(); 
+        Button validerButton = new Button("Valider"); 
 
         validerButton.setOnAction(e -> {
             try {
-                int limite = Integer.parseInt(limiteField.getText());
-                Bibliotheque.definirLimiteEmprunts(limite);
-                System.out.println("Limite des emprunts définie avec succès : " + limite);
-                Stage stage = (Stage) validerButton.getScene().getWindow();
+                int limite = Integer.parseInt(limiteField.getText()); 
+                Bibliotheque.definirLimiteEmprunts(limite); 
+                System.out.println("Limite des emprunts définie avec succès : " + limite); 
+                Stage stage = (Stage) validerButton.getScene().getWindow(); 
                 stage.close();
             } catch (NumberFormatException ex) {
-                System.out.println("Veuillez entrer un nombre valide.");
+                System.out.println("Veuillez entrer un nombre valide."); 
             }
         });
 
         root.getChildren().addAll(new Label("Limite de livres à emprunter:"), limiteField, validerButton);
-        return root;
+        return root; 
     }
 }
 
+// Définition de la classe StatistiquesPage
 class StatistiquesPage implements Page {
     @Override
     public String getTitle() {
@@ -576,31 +594,28 @@ class StatistiquesPage implements Page {
 
     @Override
     public VBox getContent() {
-        VBox root = new VBox();
-        root.setSpacing(10);
-        root.setPadding(new Insets(10));
+        VBox root = new VBox(); 
+        root.setSpacing(10); 
+        root.setPadding(new Insets(10)); 
 
-        // Créer les éléments d'interface utilisateur
         Label statistiquesLabel = new Label("Statistiques de la bibliothèque:");
         Label nombreTotalLivresLabel = new Label("Nombre total de livres: " + Bibliotheque.getNombreTotalLivres());
         Label nombreExemplairesEmpruntesLabel = new Label("Nombre d'exemplaires empruntés: " + Bibliotheque.getNombreExemplairesEmpruntes());
-        
-        // Créer le bouton pour fermer la fenêtre
+
         Button fermerButton = new Button("Fermer");
         fermerButton.setOnAction(event -> {
-            Stage stage = (Stage) fermerButton.getScene().getWindow();
-            stage.close();
+            Stage stage = (Stage) fermerButton.getScene().getWindow(); 
+            stage.close(); 
         });
 
-        // Créer une HBox pour aligner le bouton en bas à droite
         HBox buttonBox = new HBox();
-        buttonBox.getChildren().add(fermerButton);
+        buttonBox.getChildren().add(fermerButton); 
         buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
 
-        // Ajouter les éléments à la racine
         root.getChildren().addAll(statistiquesLabel, nombreTotalLivresLabel, nombreExemplairesEmpruntesLabel, buttonBox);
 
-        return root;
+        return root; 
     }
 }
+
 

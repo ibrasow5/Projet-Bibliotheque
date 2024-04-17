@@ -3,14 +3,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Bibliotheque {
-    private static ArrayList<Livre> listeLivres;
+    private static ArrayList<Livre> listeLivres; 
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL_BD = "jdbc:mysql://localhost:3306/bibliotheque";
     private static final String UTILISATEUR = "root";
     private static final String MOT_DE_PASSE = "";
 
+    // Constructeur
     public Bibliotheque() {
-        Bibliotheque.listeLivres = new ArrayList<>();
+        Bibliotheque.listeLivres = new ArrayList<>(); 
         try {
             Class.forName(JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
@@ -18,6 +19,7 @@ public class Bibliotheque {
         }
     }
 
+    // Méthode pour ajouter un livre à la bibliothèque 
     public void ajouterLivre(Livre livre) {
         listeLivres.add(livre);
         try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE)) {
@@ -32,6 +34,7 @@ public class Bibliotheque {
         }
     }
 
+    // Méthode pour supprimer un livre de la bibliothèque
     public void supprimerLivre(String isbn) {
         try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
              PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM livre WHERE ISBN = ?")) {
@@ -42,6 +45,7 @@ public class Bibliotheque {
         }
     }
 
+    // Méthode pour modifier les informations d'un livre 
     public void modifierLivre(Livre livre, String nouveauTitre, String nouvelAuteur, int nouvelleAnneePublication) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
@@ -57,9 +61,8 @@ public class Bibliotheque {
             e.printStackTrace();
         }
     }
-    
-    
 
+    // Méthode pour rechercher un livre par titre, auteur ou ISBN
     public static Livre rechercherLivre(String critere, String valeur) {
         Livre livreTrouve = null;
         try {
@@ -89,6 +92,7 @@ public class Bibliotheque {
         return livreTrouve;
     }
 
+    // Méthode pour vérifier l'éligibilité d'un utilisateur
     public boolean verifierEligibilite(int numeroIdentification) {
         boolean estEligible = false;
         try {
@@ -107,6 +111,7 @@ public class Bibliotheque {
         return estEligible;
     }
 
+    // Méthode pour enregistrer l'emprunt d'un livre par un utilisateur
     public void enregistrerEmprunt(int numeroIdentification, String ISBN) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
@@ -121,8 +126,8 @@ public class Bibliotheque {
             e.printStackTrace();
         }
     }
-    
 
+    // Méthode pour enregistrer le retour d'un livre par un utilisateur
     public void enregistrerRetour(int numeroIdentification, String ISBN) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
@@ -137,8 +142,8 @@ public class Bibliotheque {
             e.printStackTrace();
         }
     }
-    
 
+    // Méthode pour obtenir le nombre de livres empruntés par un utilisateur
     public int nombreLivresEmpruntes(Utilisateur utilisateur) {
         int nombreEmprunts = 0;
         try {
@@ -157,6 +162,7 @@ public class Bibliotheque {
         return nombreEmprunts;
     }
 
+    // Méthode pour afficher les statistiques de la bibliothèque
     public void afficherStatistiques() {
         try {
             Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
@@ -176,16 +182,19 @@ public class Bibliotheque {
         }
     }
 
+    // Méthode pour ajouter un utilisateur 
     public void ajouterUtilisateur(Utilisateur utilisateur) {
         utilisateur.ajouterUtilisateur();
     }
 
+    // Méthode pour définir la limite d'emprunts
     @SuppressWarnings("unused")
     private static int limiteEmprunts;
     public static void definirLimiteEmprunts(int limite) {
         limiteEmprunts = limite;
     }
 
+    // Méthode pour obtenir le nombre total de livres dans la bibliothèque
     public static int getNombreTotalLivres() {
         int nombreTotalLivres = 0;
         try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
@@ -200,9 +209,8 @@ public class Bibliotheque {
         }
         return nombreTotalLivres;
     }
-    
-    
-    
+
+    // Méthode pour obtenir le nombre total d'exemplaires empruntés
     public static int getNombreExemplairesEmpruntes() {
         int nombreExemplairesEmpruntes = 0;
         try (Connection connection = DriverManager.getConnection(URL_BD, UTILISATEUR, MOT_DE_PASSE);
