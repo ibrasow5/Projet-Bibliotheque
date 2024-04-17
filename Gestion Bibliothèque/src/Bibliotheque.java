@@ -62,7 +62,7 @@ public class Bibliotheque {
         }
     }
 
-    // Méthode pour rechercher un livre par titre, auteur ou ISBN
+    // Méthode pour rechercher un livre par titre, auteur ou ISBN.
     public static Livre rechercherLivre(String critere, String valeur) {
         Livre livreTrouve = null;
         try {
@@ -182,9 +182,13 @@ public class Bibliotheque {
         }
     }
 
-    // Méthode pour ajouter un utilisateur 
+    // Méthode pour ajouter un utilisateur dans la base de données
     public void ajouterUtilisateur(Utilisateur utilisateur) {
-        utilisateur.ajouterUtilisateur();
+        try {
+            utilisateur.ajouterUtilisateur();
+        } catch (LibraryException e) {
+            e.printStackTrace();
+        }
     }
 
     // Méthode pour définir la limite d'emprunts

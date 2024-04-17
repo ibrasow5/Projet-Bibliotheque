@@ -38,7 +38,7 @@ public class Utilisateur {
     }
 
     // Méthode pour ajouter un utilisateur
-    public void ajouterUtilisateur() {
+    public void ajouterUtilisateur() throws LibraryException {
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/bibliotheque", "root", "");
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO utilisateur (NumeroIdentification, Nom) VALUES (?, ?)");
@@ -48,22 +48,22 @@ public class Utilisateur {
             preparedStatement.close();
             connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new LibraryException("Erreur lors de l'ajout de l'utilisateur.", e);
         }
     }
+    
 
     // Méthode pour emprunter un livre
-    public void emprunterLivre(Livre livre) {
-        int nombreMaxEmprunts = 3; 
+    public void emprunterLivre(Livre livre) throws LibraryException {
+        int nombreMaxEmprunts = 3;
         if (livresEmpruntes.size() >= nombreMaxEmprunts) {
-            System.out.println("Vous avez déjà atteint le nombre maximum d'emprunts autorisés.");
-            return;
+            throw new LibraryException("Vous avez déjà atteint le nombre maximum d'emprunts autorisés.", null);
         }
         livresEmpruntes.add(livre);
         Bibliotheque bibliotheque = new Bibliotheque();
         bibliotheque.enregistrerEmprunt(this.getNumeroIdentification(), livre.getISBN());
         System.out.println("Livre emprunté avec succès !");
-    }    
+    } 
     
     // Méthode pour retourner un livre
     public void retournerLivre(Livre livre) {
