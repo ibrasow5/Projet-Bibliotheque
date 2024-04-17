@@ -63,5 +63,13 @@ public class Utilisateur {
         livresEmpruntes.remove(livre);
         Bibliotheque bibliotheque = new Bibliotheque();
         bibliotheque.enregistrerRetour(this.getNumeroIdentification(), livre.getISBN());
-    }     
+    }
+    
+    public void afficherLivresEmpruntes() {
+        System.out.println("Livres empruntés par " + nom + " (ID: " + numeroIdentification + "):");
+        for (Livre livre : livresEmpruntes) {
+            System.out.println(livre.toString());
+            System.out.println(); // Saut de ligne pour séparer les livres
+        }
+    }
 }
